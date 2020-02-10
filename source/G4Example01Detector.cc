@@ -41,23 +41,38 @@ int G4Example01Detector::IsInDetector(G4VPhysicalVolume *volume) const
 
 void G4Example01Detector::ConstructMe(G4LogicalVolume *logicWorld)
 {
-  double xdim = 20*cm;
-  double ydim = 20*cm;
-  double zdim = 20*cm;
-  G4VSolid *solidbox = new G4Box("Example01BoxSolid", xdim/2., ydim/2., zdim/2.);
-  G4VSolid *cylcut = new G4Tubs("CylinderCutSolid", 0., xdim/4., zdim, 0., M_PI*rad);
-  G4VSolid *subtract = new G4SubtractionSolid("HoleInBox",solidbox,cylcut);
-  G4LogicalVolume *logical = new G4LogicalVolume(subtract, G4Material::GetMaterial("G4_Al"), "BoxWithHoleLogical");
+  double prapidity = 1;
+  int fNbOfTiles=6;
+  
+  double bmt_length = (1-exp(-2*prapidity))/exp(-prapidity)*80*cm;
+  double bmt_thickness[6] = {5*mm, 5*mm, 5*mm, 5*mm, 5*mm, 5*mm};
+  double bmt_rad[6] = {15*cm, 28*cm, 41*cm, 54*cm, 67*cm, 80*cm};
+  
+  for (G4int copyNo=0; copyNo<fNbOfTiles; copyNo++) {
+  
+    G4Tubs* BMTTileS
+      = new G4Tubs("BMTTile_Solid", bmt_rad[copyNo]-bmt_thickness[copyNo]/2, bmt_rad[copyNo]+bmt_thickness[copyNo]/2, bmt_length/2, 0.*deg, 360.*deg);
 
-  G4VisAttributes *vis = new G4VisAttributes(G4Color(G4Colour::Grey())); // grey is good to see the tracks in the display
-  vis->SetForceSolid(true);
-  logical->SetVisAttributes(vis);
-  G4VPhysicalVolume *phy = new G4PVPlacement(nullptr, G4ThreeVector(0,0, 0),
-                                               logical, "BoxWithHole",
-                                               logicWorld, 0, false, OverlapCheck());
+    //fLogicBMTTile[copyNo] =
+    G4LogicalVolume* fLogicBMTTile = 
+            new G4LogicalVolume(BMTTileS, G4Material::GetMaterial("G4_Ar"), "BMTTile_LV",0,0,0);
+
+    G4VisAttributes *vis = new G4VisAttributes(G4Color(G4Colour::Grey())); // grey is good to see the tracks in the display
+    vis->SetForceSolid(true);
+    fLogicBMTTile->SetVisAttributes(vis);
+
+    G4VPhysicalVolume *phy = new G4PVPlacement(0,                            // no rotation
+                                               G4ThreeVector(0,0,0), // at (x,y,z)
+                                               fLogicBMTTile,        // its logical volume
+                                               "BMTTile_PV",                 // its name
+                                               logicWorld,                    // its mother  volume
+                                               false,                        // no boolean operations
+                                               copyNo,                       // copy number
+                                               OverlapCheck());              // checking overlaps 
 // add it to the list of placed volumes so the IsInDetector method
 // picks them up
     m_PhysicalVolumesSet.insert(phy);
+  }
   return;
 }
 
@@ -70,3 +85,4 @@ void G4Example01Detector::Print(const std::string &what) const
   }
   return;
 }
+/* vim: set expandtab shiftwidth=2 tabstop=2: */

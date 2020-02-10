@@ -1,0 +1,13 @@
+*.root
+*.macro
+*.cache
+source/build
+*.in
+*.m4
+*.guess
+*.sub
+configure
+depcomp
+install-sh
+ltmain.sh
+missing

@@ -14,6 +14,7 @@ PHG4Reco *QTGui()
   g4->InitRun(se->topNode());
   g4->ApplyDisplayAction();
   g4->StartGui();
+  //g4->ApplyCommand("/control/execute vis.mac");
   return g4;
 }
 
